@@ -14,10 +14,10 @@
 |---------------------|-------------------------------------------------|
 | **Équipe n°**       | 2                                               |
 | **Membres**         | Adja Fatou SAGNA, Ousmane NDIAYE, Ouda OUADAH, Danielle Jamila KOAGNE NGANKAM, Wicramachine SERGIO, Krishmini KULAKRISHNA, Mohammed DERKAOUI |
-| **Sprint concerné** | `[ Cadrage / Sprint 1 / ... / Sprint 7 ]`       |
-| **Version**         | `[ v1.0 · v1.1 · v2.0 ]`                       |
-| **Date de remise**  | `[ JJ/MM/AAAA HHhMM ]`                         |
-| **Statut**          | `[ Draft · En revue PO · Validé PO · Archivé ]` |
+| **Sprint concerné** | Cadrage                                         |
+| **Version**         | v1.0                                            |
+| **Date de remise**  | 29/06/2026 16h00                                |
+| **Statut**          | Validé PO                                       |
 
 > 💡 **Convention de nommage du fichier :**
 > `equipe-XX-nom-document-vY.Z.xlsx` *(ex. equipe-03-product-backlog-v1.0.xlsx)*
@@ -32,12 +32,12 @@
 
 | ID    | Epic                          | Activité utilisateur (Story Map) | Stories incluses             | SP total |
 |-------|-------------------------------|----------------------------------|------------------------------|----------|
-| EP-01 | Identification utilisateur    | S'inscrire                       | US-01, US-07, US-13, US-18   | n.c.     |
-| EP-02 | Gestion de contenu            | Uploader un cours                | US-02, US-08, US-14          | n.c.     |
-| EP-03 | Génération de quiz            | Générer un quiz                  | US-03, US-09, US-15, US-19   | n.c.     |
-| EP-04 | Passage de quiz               | Passer le quiz                   | US-04, US-05, US-10, US-20   | n.c.     |
-| EP-05 | Suivi de progression          | Consulter résultats              | US-06, US-11, US-16          | n.c.     |
-| EP-06 | Conformité & administration   | Gérer son compte (RGPD)          | US-12, US-17                 | n.c.     |
+| EP-01 | Identification utilisateur    | S'inscrire                       | US-01, US-07, US-13, US-18   | 24 SP    |
+| EP-02 | Gestion de contenu            | Uploader un cours                | US-02, US-08, US-14          | 18 SP    |
+| EP-03 | Génération de quiz            | Générer un quiz                  | US-03, US-09, US-15, US-19   | 47 SP    |
+| EP-04 | Passage de quiz               | Passer le quiz                   | US-04, US-05, US-10, US-20   | 22 SP    |
+| EP-05 | Suivi de progression          | Consulter résultats              | US-06, US-11, US-16          | 16 SP    |
+| EP-06 | Conformité & administration   | Gérer son compte (RGPD)          | US-12, US-17                 | 10 SP    |
 
 ---
 
@@ -58,229 +58,55 @@
 
 ### 🔴 MUST — MVP (Sprint 1 à 4)
 
-#### US-01 · EP-01 · `MUST` · 3 SP · Sprint 1
-
-**En tant qu'étudiant·e**, je veux créer un compte avec email et mot de passe, afin de sauvegarder mes quizz et y revenir.
-
-- **Persona :** Étudiant·e
-- **Critères d'acceptation (Given / When / Then) :**
-  - **G :** visiteur non authentifié sur `/signup`
-  - **W :** soumet email valide + mdp ≥ 8 caractères
-  - **T :** compte créé, email envoyé, redirect `/upload`
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Todo
-
----
-
-#### US-02 · EP-02 · `MUST` · 5 SP · Sprint 1
-
-**En tant qu'étudiant·e**, je veux uploader un PDF ou saisir un texte de cours, afin de ne pas avoir à recopier mon support.
-
-- **Persona :** Étudiant·e
-- **Critères d'acceptation (Given / When / Then) :**
-  - **G :** user authentifié sur `/upload`
-  - **W :** dépose PDF ≤ 5 Mo OU texte ≥ 200 car
-  - **T :** contenu extrait, stocké, bouton « Générer » visible
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Todo
-
----
-
-#### US-03 · EP-03 · `MUST` · 8 SP · Sprint 2
-
-**En tant qu'étudiant·e**, je veux générer un quiz de 10 QCM en moins de 60 s, afin de réviser rapidement un chapitre.
-
-- **Persona :** Étudiant·e
-- **Critères d'acceptation (Given / When / Then) :**
-  - **G :** un cours stocké pour l'user
-  - **W :** clique « Générer un quiz » sur `/quiz`
-  - **T :** 10 QCM générés en < 60 s via Llama 3.1 8B local
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Todo
-
----
-
-#### US-04 · EP-04 · `MUST` · 3 SP · Sprint 3
-
-**En tant qu'étudiant·e**, je veux soumettre mes réponses et obtenir une correction automatique, afin de savoir où je me situe.
-
-- **Persona :** Étudiant·e
-- **Critères d'acceptation (Given / When / Then) :**
-  - **G :** un quiz généré et affiché
-  - **W :** user soumet ses 10 réponses
-  - **T :** chaque réponse comparée, statut bon/mauvais enregistré
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Todo
-
----
-
-#### US-05 · EP-04 · `MUST` · 3 SP · Sprint 3
-
-**En tant qu'étudiant·e**, je veux voir mon score /10 et le détail bonnes/mauvaises réponses, afin de mesurer ma progression.
-
-- **Persona :** Étudiant·e
-- **Critères d'acceptation (Given / When / Then) :**
-  - **G :** un quiz soumis
-  - **W :** user arrive sur `/resultat`
-  - **T :** score /10 affiché + 10 questions avec corrections détaillées
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Todo
-
----
-
-#### US-06 · EP-05 · `MUST` · 3 SP · Sprint 4
-
-**En tant qu'étudiant·e**, je veux consulter l'historique de mes quizz passés, afin de suivre mon évolution dans le temps.
-
-- **Persona :** Étudiant·e
-- **Critères d'acceptation (Given / When / Then) :**
-  - **G :** user authentifié sur `/historique`
-  - **W :** la page se charge
-  - **T :** liste des quizz triés par date desc, avec titre/date/score/refaire
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Todo
+| ID | Epic | User Story (INVEST) | Persona | MoSCoW | SP | Critères d'acceptation | DoR | DoD | Sprint | Statut |
+|----|------|---------------------|---------|--------|----|------------------------|-----|-----|--------|--------|
+| US-01 | EP-01 | En tant qu'étudiant·e, je veux **créer un compte** avec email et mot de passe, afin de sauvegarder mes quizz et y revenir. | Étudiant·e | MUST | 3 | **G:** visiteur non authentifié sur `/signup` · **W:** email valide + mdp ≥ 8 car. · **T:** compte créé, email envoyé, redirect `/upload` | ☑ | ☐ | S1 | Todo |
+| US-02 | EP-02 | En tant qu'étudiant·e, je veux **uploader un PDF ou saisir un texte** de cours, afin de ne pas avoir à recopier mon support. | Étudiant·e | MUST | 5 | **G:** user authentifié sur `/upload` · **W:** PDF ≤ 5 Mo OU texte ≥ 200 car · **T:** contenu extrait, stocké, bouton « Générer » visible | ☑ | ☐ | S1 | Todo |
+| US-03 | EP-03 | En tant qu'étudiant·e, je veux **générer un quiz de 10 QCM en moins de 60 s**, afin de réviser rapidement un chapitre. | Étudiant·e | MUST | 8 | **G:** cours stocké pour l'user · **W:** clique « Générer un quiz » sur `/quiz` · **T:** 10 QCM générés en < 60 s via Llama 3.1 8B local | ☑ | ☐ | S2 | Todo |
+| US-04 | EP-04 | En tant qu'étudiant·e, je veux **soumettre mes réponses et obtenir une correction automatique**, afin de savoir où je me situe. | Étudiant·e | MUST | 3 | **G:** quiz généré et affiché · **W:** user soumet ses 10 réponses · **T:** chaque réponse comparée, statut bon/mauvais enregistré | ☑ | ☐ | S3 | Todo |
+| US-05 | EP-04 | En tant qu'étudiant·e, je veux **voir mon score /10** et le détail bonnes/mauvaises réponses, afin de mesurer ma progression. | Étudiant·e | MUST | 3 | **G:** quiz soumis · **W:** user arrive sur `/resultat` · **T:** score /10 affiché + 10 questions avec corrections détaillées | ☑ | ☐ | S3 | Todo |
+| US-06 | EP-05 | En tant qu'étudiant·e, je veux **consulter l'historique** de mes quizz passés, afin de suivre mon évolution dans le temps. | Étudiant·e | MUST | 3 | **G:** user authentifié sur `/historique` · **W:** page se charge · **T:** liste quizz triés par date desc, avec titre/date/score/refaire | ☑ | ☐ | S4 | Todo |
 
 ---
 
 ### 🟡 SHOULD — Release 2 (Sprint 5 à 7)
 
-#### US-07 · EP-01 · `SHOULD` · 3 SP · Sprint 6
-
-**En tant qu'étudiant·e**, je veux réinitialiser mon mot de passe via email, afin de pouvoir récupérer mon compte sans support.
-
-- **Persona :** Étudiant·e
-- **Critère type :** lien magique valide 24 h, redirect `/reset-password`
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Backlog
-
----
-
-#### US-08 · EP-02 · `SHOULD` · 5 SP · Sprint 6
-
-**En tant qu'étudiant·e**, je veux une bibliothèque pour mes cours uploadés, afin de retrouver vite mes PDF d'un semestre.
-
-- **Persona :** Étudiant·e
-- **Critère type :** page `/library` liste cours avec date, titre, nb quizz
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Backlog
-
----
-
-#### US-09 · EP-03 · `SHOULD` · 5 SP · Sprint 6
-
-**En tant qu'étudiant·e**, je veux choisir le niveau de difficulté et le nombre de questions (5–20), afin d'adapter à mon temps disponible.
-
-- **Persona :** Étudiant·e
-- **Critère type :** 3 niveaux (facile/moyen/dur) + slider 5–20 sur `/quiz`
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Backlog
-
----
-
-#### US-10 · EP-04 · `SHOULD` · 3 SP · Sprint 7
-
-**En tant qu'étudiant·e**, je veux un mode timer optionnel par question, afin de m'entraîner aux conditions d'examen.
-
-- **Persona :** Étudiant·e
-- **Critère type :** toggle ON/OFF + slider 10–30 s configurable
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Backlog
-
----
-
-#### US-11 · EP-05 · `SHOULD` · 5 SP · Sprint 7
-
-**En tant qu'étudiant·e**, je veux un dashboard de progression par chapitre, afin de cibler mes révisions sur mes lacunes.
-
-- **Persona :** Étudiant·e
-- **Critère type :** page `/dashboard` avec graphique en barres score / chapitre
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Backlog
-
----
-
-#### US-12 · EP-06 · `SHOULD` · 5 SP · Sprint 5
-
-**En tant qu'utilisateur·trice**, je veux exporter toutes mes données en JSON et CSV, afin d'exercer mon droit d'accès Art. 15 RGPD.
-
-- **Persona :** Tous personas
-- **Critère type :** bouton export → ZIP avec `quizz.json` + `reponses.csv` + `audit.json`
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Statut :** Backlog
+| ID | Epic | User Story (INVEST) | Persona | MoSCoW | SP | Critères d'acceptation | DoR | DoD | Sprint | Statut |
+|----|------|---------------------|---------|--------|----|------------------------|-----|-----|--------|--------|
+| US-07 | EP-01 | En tant qu'étudiant·e, je veux **réinitialiser mon mot de passe via email**, afin de récupérer mon compte sans support. | Étudiant·e | SHOULD | 3 | Lien magique valide 24 h, redirect `/reset-password` | ☐ | ☐ | S6 | Backlog |
+| US-08 | EP-02 | En tant qu'étudiant·e, je veux une **bibliothèque de mes cours uploadés**, afin de retrouver vite mes PDF d'un semestre. | Étudiant·e | SHOULD | 5 | Page `/library` liste cours avec date, titre, nb quizz | ☐ | ☐ | S6 | Backlog |
+| US-09 | EP-03 | En tant qu'étudiant·e, je veux **choisir le niveau de difficulté et le nombre de questions (5–20)**, afin d'adapter à mon temps. | Étudiant·e | SHOULD | 5 | 3 niveaux (facile/moyen/dur) + slider 5–20 sur `/quiz` | ☐ | ☐ | S6 | Backlog |
+| US-10 | EP-04 | En tant qu'étudiant·e, je veux un **mode timer optionnel par question**, afin de m'entraîner aux conditions d'examen. | Étudiant·e | SHOULD | 3 | Toggle ON/OFF + slider 10–30 s configurable | ☐ | ☐ | S7 | Backlog |
+| US-11 | EP-05 | En tant qu'étudiant·e, je veux un **dashboard de progression par chapitre**, afin de cibler mes révisions sur mes lacunes. | Étudiant·e | SHOULD | 5 | Page `/dashboard` avec graphique en barres score / chapitre | ☐ | ☐ | S7 | Backlog |
+| US-12 | EP-06 | En tant qu'utilisateur·trice, je veux **exporter mes données en JSON et CSV**, afin d'exercer mon droit d'accès Art. 15 RGPD. | Tous | SHOULD | 5 | Bouton export → ZIP avec `quizz.json` + `reponses.csv` + `audit.json` | ☐ | ☐ | S5 | Backlog |
 
 ---
 
 ### 🔵 COULD — Si capacité disponible
 
-#### US-13 · EP-01 · `COULD` · 5 SP
-
-**En tant qu'étudiant·e**, je veux me connecter via Google ou Apple OAuth, afin d'éviter de gérer un énième mot de passe.
-
-- **Persona :** Étudiant·e
-- **Critère type :** boutons OAuth + provider Django allauth
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Sprint :** n.c. &emsp; **Statut :** Backlog
-
----
-
-#### US-14 · EP-02 · `COULD` · 8 SP
-
-**En tant qu'étudiant·e**, je veux importer un cours depuis une URL web (article, blog), afin d'enrichir mes sources de révision.
-
-- **Persona :** Étudiant·e
-- **Critère type :** champ URL + scraping article + filtrage textes parasites
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Sprint :** n.c. &emsp; **Statut :** Backlog
-
----
-
-#### US-15 · EP-03 · `COULD` · 13 SP
-
-**En tant qu'enseignant·e**, je veux générer des questions ouvertes corrigées par le LLM, afin de varier les types d'évaluation.
-
-- **Persona :** Enseignant·e
-- **Critère type :** mode « question ouverte » avec barème indicatif et correction LLM
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Sprint :** n.c. &emsp; **Statut :** Backlog
-
----
-
-#### US-16 · EP-05 · `COULD` · 8 SP
-
-**En tant qu'étudiant·e**, je veux que l'app identifie mes lacunes par chapitre, afin de me concentrer sur ce qui pèche.
-
-- **Persona :** Étudiant·e
-- **Critère type :** algo agrégation scores < 5/10 + tag chapitre concerné
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Sprint :** n.c. &emsp; **Statut :** Backlog
-
----
-
-#### US-17 · EP-06 · `COULD` · 5 SP
-
-**En tant qu'utilisateur·trice**, je veux supprimer mon compte et toutes mes données, afin d'exercer mon droit à l'oubli Art. 17 RGPD.
-
-- **Persona :** Tous personas
-- **Critère type :** bouton avec confirmation 2-étapes + cron purge 30 j
-- **DoR :** ☐ &emsp; **DoD :** ☐ &emsp; **Sprint :** n.c. &emsp; **Statut :** Backlog
+| ID | Epic | User Story (INVEST) | Persona | MoSCoW | SP | Critères d'acceptation | DoR | DoD | Sprint | Statut |
+|----|------|---------------------|---------|--------|----|------------------------|-----|-----|--------|--------|
+| US-13 | EP-01 | En tant qu'étudiant·e, je veux me **connecter via Google ou Apple OAuth**, afin d'éviter de gérer un énième mot de passe. | Étudiant·e | COULD | 5 | Boutons OAuth + provider Django allauth | ☐ | ☐ | n.c. | Backlog |
+| US-14 | EP-02 | En tant qu'étudiant·e, je veux **importer un cours depuis une URL web**, afin d'enrichir mes sources de révision. | Étudiant·e | COULD | 8 | Champ URL + scraping article + filtrage textes parasites | ☐ | ☐ | n.c. | Backlog |
+| US-15 | EP-03 | En tant qu'enseignant·e, je veux **générer des questions ouvertes** corrigées par le LLM, afin de varier les types d'évaluation. | Enseignant·e | COULD | 13 | Mode « question ouverte » avec barème indicatif et correction LLM | ☐ | ☐ | n.c. | Backlog |
+| US-16 | EP-05 | En tant qu'étudiant·e, je veux que l'app **identifie mes lacunes par chapitre**, afin de me concentrer sur ce qui pèche. | Étudiant·e | COULD | 8 | Algo agrégation scores < 5/10 + tag chapitre concerné | ☐ | ☐ | n.c. | Backlog |
+| US-17 | EP-06 | En tant qu'utilisateur·trice, je veux **supprimer mon compte et mes données**, afin d'exercer mon droit à l'oubli Art. 17 RGPD. | Tous | COULD | 5 | Bouton avec confirmation 2-étapes + cron purge 30 j | ☐ | ☐ | n.c. | Backlog |
 
 ---
 
 ### ⚫ WON'T — Hors scope (décision volontaire)
 
-#### US-18 · EP-01 · `WON'T` · 13 SP
-
-**En tant que DSI d'établissement**, je veux un SSO entreprise SAML/OIDC, afin d'intégrer EduTutor à mon AD/ENT.
-
-- **Persona :** Établissement
-- **Décision :** Reporté Release 3+ *(cible B2B post-prototype)*
-- **DoR :** n.c. &emsp; **DoD :** n.c. &emsp; **Sprint :** n.c. &emsp; **Statut :** Won't
+| ID | Epic | User Story (INVEST) | Persona | MoSCoW | SP | Décision / Justification | DoR | DoD | Sprint | Statut |
+|----|------|---------------------|---------|--------|----|--------------------------|-----|-----|--------|--------|
+| US-18 | EP-01 | En tant que DSI d'établissement, je veux un **SSO entreprise SAML/OIDC**, afin d'intégrer EduTutor à mon AD/ENT. | Établissement | WON'T | 13 | Reporté Release 3+ *(cible B2B post-prototype)* | n.c. | n.c. | n.c. | Won't |
+| US-19 | EP-03 | En tant qu'étudiant·e, je veux **discuter avec un chatbot IA** pour explorer un sujet, afin d'apprendre par dialogue. | Étudiant·e | WON'T | 21 | Hors cible primaire *(concurrent direct Khanmigo)* | n.c. | n.c. | n.c. | Won't |
+| US-20 | EP-04 | En tant qu'étudiant·e, je veux **affronter d'autres étudiants en mode compétition**, afin d'ajouter du fun à la révision. | Étudiant·e | WON'T | 13 | Hors scope vision *(apprentissage personnalisé, pas gamification compétitive)* | n.c. | n.c. | n.c. | Won't |
 
 ---
 
-#### US-19 · EP-03 · `WON'T` · 21 SP
 
-**En tant qu'étudiant·e**, je veux discuter avec un chatbot IA pour explorer un sujet, afin d'apprendre par dialogue.
 
-- **Persona :** Étudiant·e
-- **Décision :** Hors cible primaire *(concurrent direct Khanmigo). Ne pas y aller.*
-- **DoR :** n.c. &emsp; **DoD :** n.c. &emsp; **Sprint :** n.c. &emsp; **Statut :** Won't
 
----
-
-#### US-20 · EP-04 · `WON'T` · 13 SP
-
-**En tant qu'étudiant·e**, je veux affronter d'autres étudiants en mode compétition, afin d'ajouter du fun à la révision.
-
-- **Persona :** Étudiant·e
-- **Décision :** Hors scope vision *(apprentissage personnalisé, pas gamification compétitive)*
-- **DoR :** n.c. &emsp; **DoD :** n.c. &emsp; **Sprint :** n.c. &emsp; **Statut :** Won't
-
----
 
 ### 📊 Récapitulatif
 
@@ -337,13 +163,13 @@ Une story est **DONE** (validée Sprint Review) si **TOUS** ces critères sont c
 
 | Critère qualité                                                                      | Auto-évaluation                     | Commentaire / preuve |
 |--------------------------------------------------------------------------------------|-------------------------------------|----------------------|
-| 20 user stories pré-remplies (6 MUST + 6 SHOULD + 5 COULD + 3 WON'T)               | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Toutes les stories sont au format INVEST *(En tant que ... je veux ... afin de ...)*| ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Chaque story a une priorité MoSCoW assignée et un persona ciblé                     | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Les 6 MUST correspondent exactement aux 6 features F1–F6 imposées                   | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Les 6 MUST ont des critères d'acceptation Given/When/Then complets                  | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Chaque story est rattachée à une Epic (EP-01 à EP-06)                               | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Les story points sont estimés (au moins indicatifs)                                 | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| La DoR et la DoD sont rédigées et partagées par l'équipe                            | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Le Product Backlog a été ordonné par valeur business + dépendances                  | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
-| Toutes les stories ont été passées au crible INVEST en équipe                       | ☐ Oui &emsp; ☐ Partiel &emsp; ☐ Non |                      |
+| 20 user stories pré-remplies (6 MUST + 6 SHOULD + 5 COULD + 3 WON'T)               | ☑ Oui                               | 20 US rédigées dans ce backlog |
+| Toutes les stories sont au format INVEST *(En tant que ... je veux ... afin de ...)* | ☑ Oui                               | Format INVEST respecté pour toutes |
+| Chaque story a une priorité MoSCoW assignée et un persona ciblé                     | ☑ Oui                               | MoSCoW + persona définis |
+| Les 6 MUST correspondent exactement aux 6 features F1–F6 imposées                   | ☑ Oui                               | US-01 à US-06 = F1–F6 |
+| Les 6 MUST ont des critères d'acceptation Given/When/Then complets                  | ☑ Oui                               | G/W/T complets sur US-01 à US-06 |
+| Chaque story est rattachée à une Epic (EP-01 à EP-06)                               | ☑ Oui                               | EP-01 à EP-06 assignés |
+| Les story points sont estimés (au moins indicatifs)                                 | ☑ Oui                               | SP estimés (3 à 21) via Planning Poker |
+| La DoR et la DoD sont rédigées et partagées par l'équipe                            | ☑ Oui                               | DoR + DoD section dédiée |
+| Le Product Backlog a été ordonné par valeur business + dépendances                  | ☑ Oui                               | Ordonné MUST → SHOULD → COULD → WON'T |
+| Toutes les stories ont été passées au crible INVEST en équipe                       | ☑ Oui                               | Revue INVEST en équipe lors du cadrage |
