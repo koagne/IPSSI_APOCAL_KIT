@@ -18,10 +18,9 @@ from .base import LLMError
 
 logger = logging.getLogger(__name__)
 
-# Limite de caractères en entrée pour ne pas saturer le contexte d'un petit
-# modèle (Llama 8B ~8k tokens). Les gros modèles API tolèrent bien plus, mais
-# on garde une limite commune pour des coûts/latences maîtrisés.
-MAX_SOURCE_CHARS = 8000
+# Limite de caractères en entrée. Réduit pour diminuer la latence Ollama sur
+# CPU (~3 t/s avec llama3.2:3b). Les API cloud tolèrent des valeurs plus élevées.
+MAX_SOURCE_CHARS = 3000
 
 SYSTEM_PROMPT = """Tu es un assistant pédagogique francophone spécialisé en
 génération de QCM. À partir du cours fourni, tu génères exactement 10 questions
