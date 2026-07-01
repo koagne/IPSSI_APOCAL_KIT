@@ -16,6 +16,8 @@ from rest_framework.views import APIView
 from quizzes.models import Question, Quiz
 from quizzes.serializers import QuizSerializer
 
+from accounts.audit import log_audit_event
+
 from .pdf_utils import PDFError, extract_text_from_pdf
 from .serializers import GenerateQuizSerializer
 from .services import get_llm_client
@@ -113,6 +115,13 @@ def generate_quiz_async(quiz_id, source_text, title, is_testing=False):
         quiz.progress_step = 2
         quiz.save(update_fields=["status", "progress_step"])
 
+        log_audit_event(
+            quiz.user,
+            "quiz_generation_started",
+            "Génération de quiz lancée",
+            {"quiz_id": quiz.id, "title": title},
+        )
+
         # Étape 3 (40%) : Génération par l'IA
         quiz.progress_step = 3
         quiz.save(update_fields=["progress_step"])
@@ -142,6 +151,13 @@ def generate_quiz_async(quiz_id, source_text, title, is_testing=False):
             quiz.progress_step = 5
             quiz.save(update_fields=["status", "progress_step", "updated_at"])
 
+        log_audit_event(
+            quiz.user,
+            "quiz_generation_completed",
+            "Quiz généré avec succès",
+            {"quiz_id": quiz.id, "questions": len(questions_data)},
+        )
+
     except Exception as exc:
         if not is_testing:
             close_old_connections()
@@ -151,6 +167,13 @@ def generate_quiz_async(quiz_id, source_text, title, is_testing=False):
             quiz.progress_step = 0
             quiz.error_message = str(exc)
             quiz.save(update_fields=["status", "progress_step", "error_message"])
+
+            log_audit_event(
+                quiz.user,
+                "quiz_generation_failed",
+                "Échec de la génération de quiz",
+                {"quiz_id": quiz.id, "error": str(exc)},
+            )
         except Exception:
             pass
     finally:
@@ -207,6 +230,13 @@ class GenerateQuizView(APIView):
             source_text=source_text,
             status="pending",
             progress_step=1,
+        )
+
+        log_audit_event(
+            request.user,
+            "quiz_requested",
+            "Quiz demandé",
+            {"quiz_id": quiz.id, "title": title, "has_pdf": bool(pdf_file)},
         )
 
         # 3. Déclenchement asynchrone (ou synchrone en cas de tests unitaires)

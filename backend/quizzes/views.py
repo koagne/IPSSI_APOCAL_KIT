@@ -13,6 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.audit import log_audit_event
+
 from .models import Question, Quiz
 from .serializers import (
     QuizSerializer,
@@ -98,6 +100,13 @@ class AnswerQuizView(APIView):
 
         quiz.score = score
         quiz.save(update_fields=["score", "updated_at"])
+
+        log_audit_event(
+            request.user,
+            "quiz_answered",
+            "Quiz corrigé",
+            {"quiz_id": quiz.id, "score": score, "total": 10},
+        )
 
         return Response(
             {
