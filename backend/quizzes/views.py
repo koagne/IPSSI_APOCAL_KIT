@@ -28,7 +28,11 @@ class QuizListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Quiz.objects.filter(user=self.request.user).order_by("-created_at")
+        return (
+            Quiz.objects.filter(user=self.request.user)
+            .annotate(nb_questions_annotated=Count("questions"))
+            .order_by("-created_at")
+        )
 
     @extend_schema(description="Liste paginée des quizz de l'utilisateur connecté.")
     def get(self, request, *args, **kwargs):
@@ -121,7 +125,7 @@ class StatsView(APIView):
 
     @extend_schema(responses={200: OpenApiResponse(description="KPIs + historique des scores")})
     def get(self, request):
-        quizzes = Quiz.objects.filter(user=request.user)
+        quizzes = Quiz.objects.filter(user=request.user, status="completed")
         taken = quizzes.filter(score__isnull=False)
 
         agg = taken.aggregate(avg=Avg("score"), best=Max("score"), nb=Count("id"))
@@ -171,7 +175,7 @@ class MistakesView(APIView):
     @extend_schema(responses={200: OpenApiResponse(description="Liste des questions ratées")})
     def get(self, request):
         wrong = (
-            Question.objects.filter(quiz__user=request.user, selected_index__isnull=False)
+            Question.objects.filter(quiz__user=request.user, quiz__status="completed", selected_index__isnull=False)
             .exclude(selected_index=F("correct_index"))
             .select_related("quiz")
             .order_by("-quiz__created_at", "index")
