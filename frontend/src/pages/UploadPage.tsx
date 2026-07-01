@@ -19,6 +19,7 @@ export default function UploadPage() {
   const [status, setStatus] = useState<'pending' | 'processing' | 'completed' | 'failed' | null>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const loadingStartedAtRef = useRef<number>(0);
+  const pulseRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const ensureMinimumLoadingTime = async () => {
     const minVisibleDurationMs = 1200;
@@ -34,6 +35,24 @@ export default function UploadPage() {
       clearInterval(pollingRef.current);
       pollingRef.current = null;
     }
+    if (pulseRef.current) {
+      clearInterval(pulseRef.current);
+      pulseRef.current = null;
+    }
+  };
+
+  const getProgressPercent = (step: number, qStatus: typeof status) => {
+    if (qStatus === 'processing' && step === 3) {
+      const elapsedSeconds = (Date.now() - loadingStartedAtRef.current) / 1000;
+      return Math.min(85, 60 + Math.floor(elapsedSeconds * 3));
+    }
+
+    if (step === 1) return 20;
+    if (step === 2) return 40;
+    if (step === 3) return 60;
+    if (step === 4) return 90;
+    if (step === 5) return 100;
+    return 10;
   };
 
   // Nettoyage de l'intervalle lors du démontage du composant
@@ -50,16 +69,19 @@ export default function UploadPage() {
         const step = quiz.progress_step ?? 0;
         const qStatus = quiz.status ?? 'pending';
 
-        // Association des étapes aux pourcentages correspondants
-        let pct = 10;
-        if (step === 1) pct = 20;
-        else if (step === 2) pct = 40;
-        else if (step === 3) pct = 70;
-        else if (step === 4) pct = 90;
-        else if (step === 5) pct = 100;
+        if (qStatus === 'processing' && step === 3 && !pulseRef.current) {
+          pulseRef.current = setInterval(() => {
+            setProgressPercent((current) => Math.min(85, current + 1));
+          }, 800);
+        }
+
+        if (!(qStatus === 'processing' && step === 3) && pulseRef.current) {
+          clearInterval(pulseRef.current);
+          pulseRef.current = null;
+        }
 
         setProgressStep(step);
-        setProgressPercent(pct);
+        setProgressPercent(getProgressPercent(step, qStatus));
         setStatus(qStatus);
 
         if (qStatus === 'completed') {

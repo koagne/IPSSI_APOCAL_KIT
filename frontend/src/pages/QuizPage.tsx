@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getQuiz, submitAnswers, type Quiz, type AnswerResult } from '@/api/quizzes';
 
@@ -12,6 +12,7 @@ export default function QuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const loadedAtRef = useRef<number>(Date.now());
 
   useEffect(() => {
     let pollHandle: ReturnType<typeof setInterval> | null = null;
@@ -106,10 +107,12 @@ export default function QuizPage() {
           </div>
         </div>
         <p className="text-slate-600 text-sm">
-          Ce quiz est en cours de création par l'IA. Veuillez patienter.
+          Ce quiz est en cours de création par l'IA. L'étape à 60% correspond à la génération LLM,
+          qui peut être la plus longue.
         </p>
         <p className="text-slate-500 text-xs">
-          Progression actuelle : {Math.min(100, Math.max(0, (quiz.progress_step ?? 0) * 20))}%
+          Progression actuelle : {Math.min(100, Math.max(0, (quiz.progress_step ?? 0) * 20))}% ·
+          attente {Math.max(1, Math.floor((Date.now() - loadedAtRef.current) / 1000))} s
         </p>
         <div className="flex justify-center gap-4">
           <Link to="/upload" className="btn-secondary">
