@@ -229,3 +229,9 @@ class DeleteAccountSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("Mot de passe incorrect.")
         return value
+
+
+class ExportFormatSerializer(serializers.Serializer):
+    """Format demandé pour l'export RGPD."""
+
+    format = serializers.ChoiceField(choices=["json", "zip"], required=False, default="json")

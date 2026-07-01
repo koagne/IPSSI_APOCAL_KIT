@@ -5,6 +5,7 @@ from .views import (
     LoginView,
     LogoutView,
     MeView,
+    MeExportView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     ProfileView,
@@ -19,6 +20,7 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("me/", MeView.as_view(), name="me"),
+    path("me/export/", MeExportView.as_view(), name="me-export"),
     # Validation d'email (lien reçu par email)
     path("verify-email/", VerifyEmailView.as_view(), name="verify-email"),
     path("resend-verification/", ResendVerificationView.as_view(), name="resend-verification"),

@@ -13,6 +13,9 @@ Endpoints d'authentification (Lot 3 : email-identifiant + validation + reset).
 
 import logging
 
+from django.http import HttpResponse
+from django.utils import timezone
+
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
@@ -24,11 +27,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .emails import EmailError, send_password_reset_email, send_verification_email
+from .audit import log_audit_event
+from .exporting import build_export_artifact
 from .models import get_or_create_profile
 from .serializers import (
     ChangePasswordSerializer,
     DeleteAccountSerializer,
     EmailVerifySerializer,
+    ExportFormatSerializer,
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
@@ -68,6 +74,8 @@ class SignupView(APIView):
             send_verification_email(user)
         except EmailError as exc:
             logger.warning("Email de validation non envoyé pour %s : %s", user.email, exc)
+
+        log_audit_event(user, "signup", "Compte créé", {"email": user.email})
 
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
@@ -260,6 +268,13 @@ class ProfileView(APIView):
             except EmailError as exc:
                 logger.warning("Email de validation non renvoyé pour %s : %s", user.email, exc)
 
+        log_audit_event(
+            user,
+            "profile_update",
+            "Profil modifié",
+            {"first_name": user.first_name, "last_name": user.last_name, "email": user.email},
+        )
+
         return Response(UserSerializer(user).data)
 
     @extend_schema(
@@ -302,4 +317,67 @@ class ChangePasswordView(APIView):
         # reconnecter manuellement.
         Token.objects.filter(user=user).delete()
         token = Token.objects.create(user=user)
+        log_audit_event(user, "password_change", "Mot de passe modifié")
         return Response({"detail": "Mot de passe modifié.", "token": token.key})
+
+
+class MeExportView(APIView):
+    """Export RGPD du compte authentifié au format JSON ou ZIP."""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(responses={200: OpenApiResponse(description="Export des données utilisateur")})
+    def get(self, request):
+        serializer = ExportFormatSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        output_format = serializer.validated_data["format"]
+
+        from .models import DataRequest
+
+        data_request = DataRequest.objects.create(
+            requester=request.user,
+            status=DataRequest.Status.RECEIVED,
+            requested_format=output_format,
+        )
+        data_request.status = DataRequest.Status.PROCESSING
+        data_request.save(update_fields=["status"])
+
+        log_audit_event(
+            request.user,
+            "sar_requested",
+            "Demande d'accès aux données reçue",
+            {"format": output_format, "data_request_id": data_request.id},
+        )
+
+        try:
+            _, artifact = build_export_artifact(request.user, output_format=output_format)
+            data_request.status = DataRequest.Status.RESPONDED
+            data_request.responded_at = timezone.now()
+            data_request.export_hash = artifact.sha256_hex
+            data_request.export_filename = artifact.filename
+            data_request.response_size = len(artifact.content)
+            data_request.save(
+                update_fields=[
+                    "status",
+                    "responded_at",
+                    "export_hash",
+                    "export_filename",
+                    "response_size",
+                ]
+            )
+
+            log_audit_event(
+                request.user,
+                "sar_responded",
+                "Export RGPD généré",
+                {"format": output_format, "hash": artifact.sha256_hex},
+            )
+
+            response = HttpResponse(artifact.content, content_type=artifact.content_type)
+            response["Content-Disposition"] = f'attachment; filename="{artifact.filename}"'
+            response["X-Content-SHA256"] = artifact.sha256_hex
+            return response
+        except Exception as exc:
+            data_request.error_message = str(exc)
+            data_request.save(update_fields=["error_message"])
+            raise
