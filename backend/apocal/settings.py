@@ -176,6 +176,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    # Le projet utilise déjà un paramètre `format` côté métier pour l'export RGPD.
+    # On désactive donc l'override de rendu par query string pour éviter un conflit.
+    "URL_FORMAT_OVERRIDE": None,
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
