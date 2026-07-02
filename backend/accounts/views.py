@@ -19,17 +19,19 @@ from django.utils import timezone
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from django.db.models import Avg, F, Q
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .emails import EmailError, send_password_reset_email, send_verification_email
 from .audit import log_audit_event
 from .exporting import build_export_artifact
-from .models import get_or_create_profile
+from .models import TeacherSuggestion, get_or_create_profile
 from .serializers import (
     ChangePasswordSerializer,
     DeleteAccountSerializer,
@@ -40,9 +42,11 @@ from .serializers import (
     PasswordResetRequestSerializer,
     ProfileUpdateSerializer,
     SignupSerializer,
+    TeacherSuggestionSerializer,
     UserSerializer,
 )
 from .tokens import read_email_verify_token, read_password_reset_tokens
+from quizzes.models import Question, Quiz
 
 logger = logging.getLogger(__name__)
 
@@ -381,3 +385,119 @@ class MeExportView(APIView):
             data_request.error_message = str(exc)
             data_request.save(update_fields=["error_message"])
             raise
+
+
+def build_teacher_snapshot(student: User) -> dict:
+    """Construit un résumé pédagogique d'un élève."""
+
+    quizzes = Quiz.objects.filter(user=student)
+    completed = quizzes.filter(status="completed", score__isnull=False)
+    answered = Question.objects.filter(quiz__user=student, quiz__status="completed", selected_index__isnull=False)
+    wrong_answers = answered.exclude(selected_index=F("correct_index")).select_related("quiz")
+
+    last_quiz = completed.order_by("-created_at").first()
+    average_score = completed.aggregate(avg=Avg("score"))["avg"]
+    correct_count = answered.filter(selected_index=F("correct_index")).count()
+    answered_count = answered.count()
+
+    return {
+        "id": student.id,
+        "name": student.get_full_name() or student.email or student.username,
+        "email": student.email,
+        "quizzes_taken": completed.count(),
+        "average_score": round(average_score, 1) if average_score is not None else None,
+        "last_score": last_quiz.score if last_quiz is not None else None,
+        "accuracy": round(100 * correct_count / answered_count) if answered_count else None,
+        "mistakes_count": wrong_answers.count(),
+        "recent_mistakes": [
+            {
+                "quiz_id": item.quiz_id,
+                "quiz_title": item.quiz.title,
+                "index": item.index,
+                "prompt": item.prompt,
+            }
+            for item in wrong_answers.order_by("-quiz__created_at", "index")[:3]
+        ],
+        "weak_quizzes": [
+            {"id": quiz.id, "title": quiz.title, "score": quiz.score}
+            for quiz in completed.order_by("score", "-created_at")[:3]
+        ],
+        "suggestions_count": student.received_teacher_suggestions.count(),
+        "latest_activity": quizzes.order_by("-created_at").values_list("created_at", flat=True).first(),
+    }
+
+
+class MeTeacherSuggestionsView(APIView):
+    """Suggestions pédagogiques reçues par l'utilisateur connecté."""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(responses={200: TeacherSuggestionSerializer(many=True)})
+    def get(self, request):
+        suggestions = request.user.received_teacher_suggestions.select_related("author")
+        return Response(TeacherSuggestionSerializer(suggestions, many=True).data)
+
+
+class TeacherStudentsView(APIView):
+    """Vue d'ensemble des élèves pour le professeur."""
+
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(responses={200: OpenApiResponse(description="Liste des élèves et de leurs lacunes")})
+    def get(self, request):
+        q = request.query_params.get("q", "").strip()
+        students = User.objects.filter(is_staff=False, is_active=True)
+        if q:
+            students = students.filter(
+                Q(email__icontains=q)
+                | Q(username__icontains=q)
+                | Q(first_name__icontains=q)
+                | Q(last_name__icontains=q)
+            )
+
+        items = [build_teacher_snapshot(student) for student in students.order_by("first_name", "email")]
+        items.sort(
+            key=lambda item: (
+                item["average_score"] is None,
+                item["average_score"] if item["average_score"] is not None else 0,
+                item["name"],
+            )
+        )
+        return Response({"count": len(items), "students": items})
+
+
+class TeacherStudentDetailView(APIView):
+    """Détail d'un élève pour le professeur."""
+
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(responses={200: OpenApiResponse(description="Détail pédagogique d'un élève")})
+    def get(self, request, pk: int):
+        student = get_object_or_404(User, pk=pk, is_staff=False)
+        payload = build_teacher_snapshot(student)
+        suggestions = student.received_teacher_suggestions.select_related("author")
+        return Response(
+            {
+                "student": payload,
+                "suggestions": TeacherSuggestionSerializer(suggestions, many=True).data,
+            }
+        )
+
+
+class TeacherStudentSuggestionView(APIView):
+    """Création d'une suggestion pédagogique pour un élève."""
+
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(request=TeacherSuggestionSerializer, responses={201: TeacherSuggestionSerializer})
+    def post(self, request, pk: int):
+        student = get_object_or_404(User, pk=pk, is_staff=False)
+        serializer = TeacherSuggestionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        suggestion = TeacherSuggestion.objects.create(
+            author=request.user,
+            recipient=student,
+            title=serializer.validated_data["title"],
+            message=serializer.validated_data["message"],
+        )
+        return Response(TeacherSuggestionSerializer(suggestion).data, status=status.HTTP_201_CREATED)

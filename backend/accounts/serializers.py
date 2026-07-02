@@ -12,7 +12,7 @@ from django.contrib.auth.password_validation import validate_password as django_
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-from .models import get_or_create_profile
+from .models import TeacherSuggestion, get_or_create_profile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -217,6 +217,32 @@ class ChangePasswordSerializer(serializers.Serializer):
         except DjangoValidationError as exc:
             raise serializers.ValidationError(list(exc.messages)) from exc
         return value
+
+
+class TeacherSuggestionSerializer(serializers.ModelSerializer):
+    """Suggestion laissée par un professeur pour un élève."""
+
+    author_name = serializers.SerializerMethodField()
+    recipient_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TeacherSuggestion
+        fields = [
+            "id",
+            "author_name",
+            "recipient_name",
+            "title",
+            "message",
+            "created_at",
+            "read_at",
+        ]
+        read_only_fields = ["id", "author_name", "recipient_name", "created_at", "read_at"]
+
+    def get_author_name(self, obj: TeacherSuggestion) -> str:
+        return obj.author.get_full_name() or obj.author.email or obj.author.username
+
+    def get_recipient_name(self, obj: TeacherSuggestion) -> str:
+        return obj.recipient.get_full_name() or obj.recipient.email or obj.recipient.username
 
 
 class DeleteAccountSerializer(serializers.Serializer):

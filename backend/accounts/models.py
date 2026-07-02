@@ -97,3 +97,32 @@ class AuditEvent(models.Model):
 
     def __str__(self) -> str:
         return f"Audit<{self.user_id}:{self.event_type}>"
+
+
+class TeacherSuggestion(models.Model):
+    """Suggestion pédagogique laissée par un professeur pour un élève."""
+
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="written_teacher_suggestions",
+        help_text="Professeur à l'origine de la suggestion.",
+    )
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_teacher_suggestions",
+        help_text="Élève destinataire de la suggestion.",
+    )
+    title = models.CharField(max_length=120)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Suggestion pédagogique"
+        verbose_name_plural = "Suggestions pédagogiques"
+
+    def __str__(self) -> str:
+        return f"Suggestion<{self.recipient_id}:{self.title}>"
